@@ -1,0 +1,82 @@
+# Seed URLs and data sources for scraping
+
+# Official websites (examples - expand with comprehensive list)
+official_websites:
+  national:
+    - url: "https://kishida.gr.jp/"
+      name: "岸田文雄"
+      office: "Prime Minister"
+      
+    - url: "https://ishibashirintaro.com/"
+      name: "石橋林太郎"
+      office: "House of Representatives"
+      
+  # Add more officials here
+  # Format:
+  # - url: "https://example.com"
+  #   name: "Official Name"
+  #   office: "Position"
+
+# Election management committees
+election_sources:
+  national:
+    - url: "https://www.soumu.go.jp/senkyo/senkyo_s/links/senkan/"
+      name: "Ministry of Internal Affairs - Election Commissions"
+      type: "aggregator"
+      
+  # Prefectural election boards (samples - expand for all 47 prefectures)
+  prefectural:
+    - url: "https://www.senkyo.metro.tokyo.lg.jp/"
+      prefecture: "Tokyo"
+      name: "Tokyo Election Committee"
+      
+    - url: "https://www.pref.osaka.lg.jp/senkan/"
+      prefecture: "Osaka"
+      name: "Osaka Election Committee"
+      
+    # TODO: Add all 47 prefectures
+    
+# Political funding disclosure sites
+funding_sources:
+  national:
+    - url: "https://www.soumu.go.jp/senkyo/seiji_s/seijishikin/"
+      name: "Ministry of Internal Affairs - Political Funds"
+      type: "reports"
+      
+  # Add prefectural disclosure portals as discovered
+
+# SNS seed accounts (for validation/testing)
+sns_seeds:
+  x:
+    - "https://x.com/kishida230"
+    - "https://x.com/miosugita"
+    - "https://x.com/miharajunco"
+    - "https://x.com/official_s_mune"
+    
+  instagram:
+    - "https://www.instagram.com/fumio_kishida/"
+    - "https://www.instagram.com/hezumaryuaaa/"
+    
+  # facebook:
+  #   - Add seeds
+    
+  # youtube:
+  #   - Add seeds
+
+# Discovery rules for finding additional officials
+discovery_rules:
+  # Patterns to find official pages
+  official_list_pages:
+    - url_pattern: "*/giin/*"
+      selector: "a[href*='profile']"
+      
+    - url_pattern: "*/members/*"
+      selector: ".member-list a"
+      
+  # Patterns to identify SNS links on official pages
+  sns_link_selectors:
+    - "a[href*='twitter.com']"
+    - "a[href*='x.com']"
+    - "a[href*='instagram.com']"
+    - "a[href*='facebook.com']"
+    - "a[href*='youtube.com']"

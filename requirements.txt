@@ -1,0 +1,47 @@
+# Core dependencies
+requests>=2.31.0
+beautifulsoup4>=4.12.0
+lxml>=4.9.0
+requests-cache>=1.1.0
+
+# Data handling
+pandas>=2.1.0
+pydantic>=2.4.0
+
+# CLI
+typer>=0.9.0
+rich>=13.6.0
+
+# Configuration
+pyyaml>=6.0.1
+
+# Web UI
+streamlit>=1.28.0
+
+# Utilities
+python-dateutil>=2.8.2
+charset-normalizer>=3.3.0
+
+# Advanced features (optional - install as needed)
+# JavaScript rendering
+playwright>=1.40.0
+
+# PDF parsing
+pdfplumber>=0.10.0
+pdf2image>=1.16.0
+pytesseract>=0.3.10
+
+# Name matching
+rapidfuzz>=3.5.0
+sentence-transformers>=2.2.0
+torch>=2.1.0
+
+# Development and testing
+pytest>=7.4.0
+pytest-cov>=4.1.0
+black>=23.10.0
+ruff>=0.1.0
+mypy>=1.6.0
+
+# Retry and resilience
+tenacity>=8.2.3

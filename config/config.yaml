@@ -1,0 +1,139 @@
+# Japanese Public Officials Scraper Configuration
+
+scraping:
+  # Rate limiting
+  default_delay: 1.5  # seconds between requests (polite crawling)
+  max_concurrent_requests: 2
+  max_retries: 3
+  retry_backoff: 2.0  # exponential backoff multiplier
+  timeout: 30  # request timeout in seconds
+  
+  # Compliance
+  respect_robots_txt: true
+  user_agent: "PublicOfficialsScraper/1.0 (Research; +https://example.com/bot)"
+  
+  # Cache settings
+  use_cache: true
+  cache_expire_after: 86400  # 24 hours in seconds
+  
+# Output configuration
+output:
+  directory: "data/outputs"
+  encoding: "utf-8-sig"  # Excel-compatible with BOM
+  date_format: "%Y-%m-%d"
+  datetime_format: "%Y-%m-%d %H:%M:%S"
+  include_headers: true
+  
+  # CSV formatting
+  delimiter: ","
+  quotechar: "\""
+  
+# Logging
+logging:
+  level: "INFO"  # DEBUG, INFO, WARNING, ERROR, CRITICAL
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: "logs/scraper.log"
+  max_bytes: 10485760  # 10 MB
+  backup_count: 5
+  console_output: true
+  
+# Advanced features (optional)
+advanced:
+  # JavaScript rendering (requires: pip install playwright && playwright install firefox)
+  enable_js_rendering: false
+  js_wait_until: "networkidle"  # networkidle, load, domcontentloaded
+  
+  # SNS verification detection
+  detect_verification: true
+  fetch_follower_counts: false  # Requires fetching each profile
+  
+  # PDF parsing (requires: pip install pdfplumber pdf2image pytesseract)
+  enable_pdf_parsing: false
+  use_ocr_fallback: false  # OCR is slow, only if needed
+  
+  # Name matching (requires: pip install rapidfuzz)
+  enable_fuzzy_matching: true
+  fuzzy_threshold: 85.0  # 0-100
+  
+  # Semantic matching (requires: pip install sentence-transformers torch)
+  enable_semantic_matching: false
+  semantic_threshold: 0.7  # 0.0-1.0
+
+# Data collection targets
+targets:
+  officials:
+    enabled: true
+    priority: 1
+    fields:
+      - name
+      - name_kana
+      - age
+      - faction
+      - office_type
+      - jurisdiction
+      - promises_text
+      - promises_url
+      - website_url
+      - blog_url
+      
+  social_media:
+    enabled: true
+    priority: 2
+    platforms:
+      - x  # Twitter/X
+      - instagram
+      - facebook
+      - youtube
+      - blog
+      
+  elections:
+    enabled: true
+    priority: 3
+    include_scheduled: true
+    include_results: true
+    
+  funding:
+    enabled: true
+    priority: 4
+    parse_totals: false  # Set to true to attempt parsing income/expense
+    
+# SNS detection patterns
+sns_patterns:
+  x:
+    domains:
+      - "twitter.com"
+      - "x.com"
+    pattern: "(?:twitter\\.com|x\\.com)/([a-zA-Z0-9_]+)"
+    
+  instagram:
+    domains:
+      - "instagram.com"
+      - "www.instagram.com"
+    pattern: "instagram\\.com/([a-zA-Z0-9_.]+)"
+    
+  facebook:
+    domains:
+      - "facebook.com"
+      - "www.facebook.com"
+      - "fb.com"
+    pattern: "(?:facebook\\.com|fb\\.com)/([a-zA-Z0-9.]+)"
+    
+  youtube:
+    domains:
+      - "youtube.com"
+      - "www.youtube.com"
+    pattern: "youtube\\.com/(?:channel/|@|c/)([a-zA-Z0-9_-]+)"
+    
+# Domain-specific settings
+domain_settings:
+  "soumu.go.jp":
+    delay: 2.0
+    max_depth: 3
+    
+  "*.gr.jp":
+    delay: 1.5
+    max_depth: 2
+    
+  default:
+    delay: 1.5
+    max_depth: 2
