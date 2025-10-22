@@ -47,6 +47,13 @@ Installing dependencies...
 ./start_ui.sh
 ```
 
+**Or manually run:**
+```bash
+streamlit run app.py
+```
+
+**⚠️ IMPORTANT: Do NOT use `python3 app.py` - it will fail!**
+
 **Expected output:**
 ```
 You can now view your Streamlit app in your browser.
@@ -69,7 +76,33 @@ Same instructions as macOS above!
 
 ## ❓ Common Issues
 
-### Issue 1: "setup.sh: No such file or directory"
+### Issue 1: "Warning: to view this Streamlit app on a browser, run it with the following command"
+
+**Cause:** You ran `python3 app.py` instead of `streamlit run app.py`
+
+**Error Symptoms:**
+- Hundreds of "missing ScriptRunContext" warnings
+- Message: "Warning: to view this Streamlit app on a browser, run it with the following command: streamlit run app.py"
+- urllib3 OpenSSL warnings
+
+**Solution:**
+```bash
+# ❌ WRONG - Don't use this!
+python3 app.py
+
+# ✅ CORRECT - Use one of these:
+./start_ui.sh
+# OR
+streamlit run app.py
+```
+
+**Why?** Streamlit apps MUST be run with `streamlit run`, not as regular Python scripts.
+
+---
+
+### Issue 2: "setup.sh: No such file or directory"
+
+### Issue 2: "setup.sh: No such file or directory"
 
 **Cause:** You're not in the project directory
 
@@ -86,7 +119,7 @@ ls -la
 # You should see: setup.sh, start_ui.sh, app.py, main.py, etc.
 ```
 
-### Issue 2: "Permission denied"
+### Issue 3: "Permission denied"
 
 **Cause:** Scripts are not executable
 
@@ -95,7 +128,7 @@ ls -la
 chmod +x *.sh
 ```
 
-### Issue 3: "Python not found" or "python3: command not found"
+### Issue 4: "Python not found" or "python3: command not found"
 
 **Cause:** Python 3.10+ not installed
 
@@ -121,7 +154,7 @@ sudo apt install python3.11 python3.11-venv python3-pip
 sudo yum install python3.11
 ```
 
-### Issue 4: "Port 8501 is already in use"
+### Issue 5: "Port 8501 is already in use"
 
 **Solution:**
 ```bash
