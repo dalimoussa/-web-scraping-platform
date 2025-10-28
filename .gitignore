@@ -48,6 +48,10 @@ logs/*.log
 !data/state/.gitkeep
 !logs/.gitkeep
 
+# Allow important deliverable files
+!data/outputs/politicians_cleaned.csv
+!data/outputs/politicians_from_elections.csv
+
 # Testing
 .pytest_cache/
 .coverage
