@@ -2,6 +2,20 @@
 
 After cloning this repository, follow these simple steps to view the 7,336 politicians data in the web dashboard.
 
+## ⚠️ IMPORTANT: Get the Latest Updates
+
+If you cloned the repository before October 28, 2025, **please pull the latest changes**:
+
+```bash
+cd -web-scraping-platform
+git pull origin main
+```
+
+This ensures you have:
+- ✅ 7,336 politician records (not just 2)
+- ✅ Updated dashboard with Election Politicians tab
+- ✅ All data files in `data/outputs/`
+
 ## 📋 Prerequisites
 
 - Python 3.10 or higher
