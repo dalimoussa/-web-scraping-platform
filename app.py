@@ -302,7 +302,8 @@ with st.sidebar:
     st.caption("Version 1.1.1")
 
 # Main content area
-tab1, tab2, tab3, tab4, tab5 = st.tabs(["📊 Dashboard", "👥 Officials", "🗳️ Elections", "💰 Funding", "📁 Files"])
+# Tabs for different views
+tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs(["📊 Dashboard", "🏛️ Election Politicians", "👥 Officials", "🗳️ Elections", "🗺️ Municipal Scraping", "💰 Funding", "📁 Files"])
 
 # Tab 1: Dashboard
 with tab1:
@@ -322,18 +323,21 @@ with tab1:
     election_results_df = load_csv_data("election_results.csv")
     funding_df = load_csv_data("funding.csv")
     social_df = load_csv_data("officials_social.csv")
+    politicians_cleaned_df = load_csv_data("politicians_cleaned.csv")
     
     with col1:
-        count = len(officials_df) if officials_df is not None else 0
-        st.metric("👥 Officials", count)
+        count = len(politicians_cleaned_df) if politicians_cleaned_df is not None else 0
+        st.metric("🏛️ Politicians (Election Data)", count)
+        if count > 0:
+            st.caption("✅ 95.4% quality - 47 prefectures")
     
     with col2:
         count = len(elections_df) if elections_df is not None else 0
         st.metric("🗳️ Elections", count)
     
     with col3:
-        count = len(funding_df) if funding_df is not None else 0
-        st.metric("💰 Funding Records", count)
+        count = len(officials_df) if officials_df is not None else 0
+        st.metric("� Officials", count)
     
     with col4:
         count = len(social_df) if social_df is not None else 0
@@ -343,6 +347,48 @@ with tab1:
     
     # Recent data preview
     st.subheader("🔍 Recent Data Preview")
+    
+    # Add statistics for politicians data
+    if politicians_cleaned_df is not None and not politicians_cleaned_df.empty:
+        st.markdown("### 🏛️ Milestone 1 - Election Politicians Data")
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.metric("Total Politicians", f"{len(politicians_cleaned_df):,}")
+        
+        with col2:
+            prefectures = politicians_cleaned_df['prefecture'].nunique()
+            st.metric("Prefectures", f"{prefectures}/47")
+        
+        with col3:
+            with_date = politicians_cleaned_df['election_date'].notna().sum()
+            date_pct = (with_date / len(politicians_cleaned_df) * 100)
+            st.metric("With Election Date", f"{date_pct:.1f}%")
+        
+        with col4:
+            elections = politicians_cleaned_df['election'].nunique()
+            st.metric("Total Elections", f"{elections:,}")
+        
+        # Top prefectures
+        st.markdown("**Top 5 Prefectures by Politicians**")
+        top_prefectures = politicians_cleaned_df['prefecture'].value_counts().head(5)
+        col1, col2 = st.columns([1, 2])
+        
+        with col1:
+            for prefecture, count in top_prefectures.items():
+                st.write(f"**{prefecture}**: {count}")
+        
+        with col2:
+            st.bar_chart(top_prefectures)
+        
+        # Recent politicians
+        st.markdown("**Latest 10 Politicians**")
+        preview_columns = ['name', 'prefecture', 'election', 'election_date']
+        preview = politicians_cleaned_df[preview_columns].head(10)
+        st.dataframe(preview, use_container_width=True)
+        
+        st.markdown("---")
     
     col1, col2 = st.columns(2)
     
@@ -362,8 +408,110 @@ with tab1:
         else:
             st.info("No election data available")
 
-# Tab 2: Officials
+# Tab 2: Election Politicians (NEW - Milestone 1)
 with tab2:
+    st.subheader("🏛️ Election Politicians Data - Milestone 1")
+    st.caption("7,336 politicians collected from 47 prefectures via public election results")
+    
+    politicians_cleaned_df = load_csv_data("politicians_cleaned.csv")
+    
+    if politicians_cleaned_df is not None and not politicians_cleaned_df.empty:
+        # Key metrics
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.metric("Total Politicians", f"{len(politicians_cleaned_df):,}")
+        
+        with col2:
+            prefectures = politicians_cleaned_df['prefecture'].nunique()
+            st.metric("Prefectures Covered", f"{prefectures}/47")
+        
+        with col3:
+            quality_score = 95.4  # From cleaning results
+            st.metric("Data Quality", f"{quality_score}%")
+        
+        with col4:
+            elections = politicians_cleaned_df['election'].nunique()
+            st.metric("Total Elections", f"{elections:,}")
+        
+        st.markdown("---")
+        
+        # Filters
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            prefectures = ["All"] + sorted(list(politicians_cleaned_df['prefecture'].dropna().unique()))
+            selected_prefecture = st.selectbox("Prefecture", prefectures)
+        
+        with col2:
+            search = st.text_input("Search by name", "", key="politician_search")
+        
+        with col3:
+            # Year filter based on election_date
+            years = ["All"]
+            if 'election_date' in politicians_cleaned_df.columns:
+                date_years = pd.to_datetime(politicians_cleaned_df['election_date'], errors='coerce').dt.year.dropna().unique()
+                years += sorted([str(int(y)) for y in date_years], reverse=True)
+            selected_year = st.selectbox("Election Year", years)
+        
+        # Apply filters
+        filtered_df = politicians_cleaned_df.copy()
+        if selected_prefecture != "All":
+            filtered_df = filtered_df[filtered_df['prefecture'] == selected_prefecture]
+        if search:
+            filtered_df = filtered_df[filtered_df['name'].str.contains(search, na=False, case=False)]
+        if selected_year != "All":
+            filtered_df['year'] = pd.to_datetime(filtered_df['election_date'], errors='coerce').dt.year.astype(str)
+            filtered_df = filtered_df[filtered_df['year'] == selected_year]
+        
+        st.write(f"Showing {len(filtered_df):,} of {len(politicians_cleaned_df):,} politicians")
+        
+        # Display dataframe
+        if not filtered_df.empty:
+            display_columns = ['name', 'prefecture', 'election', 'election_date']
+            display_df = filtered_df[display_columns].copy()
+            st.dataframe(display_df, use_container_width=True, height=400)
+            
+            # Statistics for filtered data
+            st.markdown("---")
+            st.markdown("**Filtered Data Statistics**")
+            
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                st.markdown("**Top 10 Prefectures**")
+                top_prefectures = filtered_df['prefecture'].value_counts().head(10)
+                for prefecture, count in top_prefectures.items():
+                    st.write(f"• {prefecture}: {count}")
+            
+            with col2:
+                st.markdown("**Top 10 Elections by Candidates**")
+                top_elections = filtered_df['election'].value_counts().head(10)
+                for election, count in top_elections.items():
+                    # Shorten election name for display
+                    election_short = election[:50] + "..." if len(election) > 50 else election
+                    st.write(f"• {election_short}: {count}")
+            
+            # Download button
+            csv = filtered_df.to_csv(index=False, encoding='utf-8-sig').encode('utf-8-sig')
+            st.download_button(
+                label="📥 Download Filtered Data as CSV",
+                data=csv,
+                file_name=f"politicians_filtered_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                mime="text/csv"
+            )
+        else:
+            st.warning("No politicians match the selected filters.")
+    else:
+        st.info("No election politicians data available.")
+        st.markdown("""
+        **To collect this data:**
+        1. Run: `python scrape_elections.py --limit-per-prefecture 20`
+        2. Then: `python clean_politician_data.py`
+        """)
+
+# Tab 3: Officials
+with tab3:
     st.subheader("👥 Public Officials Data")
     
     officials_df = load_csv_data("officials.csv")
@@ -406,9 +554,181 @@ with tab2:
     else:
         st.info("No officials data available. Run the scraper to collect data.")
 
-# Tab 3: Elections
-with tab3:
-    st.subheader("🗳️ Election Data")
+# Tab 4: Elections
+with tab4:
+    st.subheader("🗳️ Election Schedules")
+    st.caption("Scraping 1,747 municipalities across Japan")
+    
+    # Load municipal URLs and scraping results
+    urls_df = load_csv_data("municipal_urls.csv")
+    results_df = load_csv_data("municipal_scraping_results.csv")
+    
+    # Statistics
+    if urls_df is not None:
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.metric("Total Municipalities", len(urls_df))
+        
+        with col2:
+            if results_df is not None:
+                scraped = len(results_df['municipality'].unique()) if 'municipality' in results_df.columns else 0
+                st.metric("Scraped", scraped)
+            else:
+                st.metric("Scraped", 0)
+        
+        with col3:
+            if results_df is not None and 'name' in results_df.columns:
+                st.metric("Officials Found", len(results_df))
+            else:
+                st.metric("Officials Found", 0)
+        
+        with col4:
+            if results_df is not None and urls_df is not None:
+                scraped_count = len(results_df['municipality'].unique()) if 'municipality' in results_df.columns else 0
+                progress = (scraped_count / len(urls_df) * 100) if len(urls_df) > 0 else 0
+                st.metric("Progress", f"{progress:.1f}%")
+            else:
+                st.metric("Progress", "0%")
+    
+    st.markdown("---")
+    
+    # Tabs for URLs and Results
+    subtab1, subtab2 = st.tabs(["Generated URLs", "Scraping Results"])
+    
+    with subtab1:
+        if urls_df is not None and not urls_df.empty:
+            st.write(f"**{len(urls_df)} Municipal Website URLs**")
+            
+            # Filters
+            col1, col2 = st.columns(2)
+            with col1:
+                if 'prefecture' in urls_df.columns:
+                    prefectures = ["All"] + sorted(urls_df['prefecture'].dropna().unique().tolist())
+                    selected_pref = st.selectbox("Filter by Prefecture", prefectures, key="muni_pref")
+                else:
+                    selected_pref = "All"
+            
+            with col2:
+                search_city = st.text_input("Search by city name", "", key="muni_search")
+            
+            # Apply filters
+            filtered_urls = urls_df.copy()
+            if selected_pref != "All":
+                filtered_urls = filtered_urls[filtered_urls['prefecture'] == selected_pref]
+            if search_city:
+                filtered_urls = filtered_urls[filtered_urls['city_name'].str.contains(search_city, na=False, case=False)]
+            
+            st.write(f"Showing {len(filtered_urls)} municipalities")
+            
+            # Display table
+            display_cols = ['row_number', 'prefecture', 'city_name', 'url', 'romaji', 'confidence']
+            available_cols = [col for col in display_cols if col in filtered_urls.columns]
+            st.dataframe(filtered_urls[available_cols], width='stretch', height=400)
+            
+            # Download buttons
+            col1, col2 = st.columns(2)
+            with col1:
+                csv = filtered_urls.to_csv(index=False, encoding='utf-8-sig').encode('utf-8-sig')
+                st.download_button(
+                    label="📥 Download Filtered URLs (CSV)",
+                    data=csv,
+                    file_name=f"municipal_urls_filtered_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                    mime="text/csv",
+                    key="download_urls_csv"
+                )
+            
+            with col2:
+                # Excel download (if openpyxl is available)
+                try:
+                    import io
+                    buffer = io.BytesIO()
+                    with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
+                        filtered_urls.to_excel(writer, index=False, sheet_name='Municipal URLs')
+                    buffer.seek(0)
+                    
+                    st.download_button(
+                        label="📥 Download Filtered URLs (Excel)",
+                        data=buffer,
+                        file_name=f"municipal_urls_filtered_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx",
+                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        key="download_urls_excel"
+                    )
+                except ImportError:
+                    st.caption("Install openpyxl for Excel export")
+        else:
+            st.info("No URL data available. Generate URLs first using: `python main.py generate-urls`")
+    
+    with subtab2:
+        if results_df is not None and not results_df.empty:
+            st.write(f"**{len(results_df)} Officials from Municipal Scraping**")
+            
+            # Filters
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                if 'municipality' in results_df.columns:
+                    municipalities = ["All"] + sorted(results_df['municipality'].dropna().unique().tolist())
+                    selected_muni = st.selectbox("Municipality", municipalities, key="result_muni")
+                else:
+                    selected_muni = "All"
+            
+            with col2:
+                if 'prefecture' in results_df.columns:
+                    prefs = ["All"] + sorted(results_df['prefecture'].dropna().unique().tolist())
+                    selected_pref_result = st.selectbox("Prefecture", prefs, key="result_pref")
+                else:
+                    selected_pref_result = "All"
+            
+            with col3:
+                search_official = st.text_input("Search official name", "", key="official_search")
+            
+            # Apply filters
+            filtered_results = results_df.copy()
+            if selected_muni != "All":
+                filtered_results = filtered_results[filtered_results['municipality'] == selected_muni]
+            if selected_pref_result != "All":
+                filtered_results = filtered_results[filtered_results['prefecture'] == selected_pref_result]
+            if search_official:
+                filtered_results = filtered_results[filtered_results['name'].str.contains(search_official, na=False, case=False)]
+            
+            st.write(f"Showing {len(filtered_results)} officials")
+            st.dataframe(filtered_results, width='stretch', height=400)
+            
+            # Download buttons
+            col1, col2 = st.columns(2)
+            with col1:
+                csv = filtered_results.to_csv(index=False, encoding='utf-8-sig').encode('utf-8-sig')
+                st.download_button(
+                    label="📥 Download Results (CSV)",
+                    data=csv,
+                    file_name=f"municipal_officials_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                    mime="text/csv",
+                    key="download_results_csv"
+                )
+            
+            with col2:
+                try:
+                    import io
+                    buffer = io.BytesIO()
+                    with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
+                        filtered_results.to_excel(writer, index=False, sheet_name='Officials')
+                    buffer.seek(0)
+                    
+                    st.download_button(
+                        label="📥 Download Results (Excel)",
+                        data=buffer,
+                        file_name=f"municipal_officials_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx",
+                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        key="download_results_excel"
+                    )
+                except ImportError:
+                    st.caption("Install openpyxl for Excel export")
+        else:
+            st.info("No scraping results yet. Run bulk scraping using: `python main.py scrape-bulk`")
+
+# Tab 5: Municipal Scraping
+with tab5:
+    st.subheader("�️ Municipal Scraping Results")
     
     elections_df = load_csv_data("elections.csv")
     
@@ -445,8 +765,8 @@ with tab3:
     else:
         st.info("No election data available. Run the scraper to collect data.")
 
-# Tab 4: Funding
-with tab4:
+# Tab 6: Funding
+with tab6:
     st.subheader("💰 Funding Data")
     
     funding_df = load_csv_data("funding.csv")
@@ -465,15 +785,19 @@ with tab4:
     else:
         st.info("No funding data available. Run the scraper to collect data.")
 
-# Tab 5: Files
-with tab5:
+# Tab 7: Files
+with tab7:
     st.subheader("📁 Output Files")
     
     output_dir = get_output_path()
     
     files = [
+        ("politicians_cleaned.csv", "🏛️ Election Politicians (Cleaned - 7,336)"),
+        ("politicians_from_elections.csv", "🏛️ Election Politicians (Raw - 7,693)"),
         ("officials.csv", "👥 Public Officials"),
         ("officials_social.csv", "📱 SNS Profiles"),
+        ("municipal_urls.csv", "🗺️ Municipal URLs (1,747 cities)"),
+        ("municipal_scraping_results.csv", "🗺️ Municipal Officials"),
         ("elections.csv", "🗳️ Election Schedules"),
         ("election_results.csv", "📊 Election Results"),
         ("funding.csv", "💰 Funding Reports")
