@@ -51,7 +51,25 @@ def is_valid_politician_name(name: str) -> bool:
         
         # Job titles that appear as separate entries
         '会社員', '無職', '経営', '代表', '職員', '元職',
-        '前職', '新人', '現職', '会社役員', '団体職員'
+        '前職', '新人', '現職', '会社役員', '団体職員',
+        
+        # Business/occupation descriptions (NEW - caught from data)
+        '会社取締役', '取締役', '公衆浴場業', '浴場業',
+        '教室主宰', '音楽教室', '塾経営', '店主',
+        '自営業', '農業', '漁業', '林業', '商店主',
+        '会社経営', '商店経営', '飲食店', '不動産',
+        '建設業', '製造業', '運送業', '販売業',
+        '理容', '美容', '整骨', '接骨', '鍼灸',
+        '税理士', '行政書士', '司法書士', '弁護士',
+        '医師', '歯科医', '薬剤師', '看護師',
+        '教員', '講師', '塾長', '校長', '園長',
+        '僧侶', '住職', '宮司', '神主',
+        '農協', '漁協', '商工会', '観光協会',
+        
+        # Generic title patterns
+        '主宰', '経営者', '代表者', '理事', '会長', '副会長',
+        '顧問', '相談役', '社長', '専務', '常務',
+        'NPO', '法人', '協会', '組合', '連合会'
     ]
     
     for keyword in exclude_keywords:
@@ -207,7 +225,16 @@ def clean_politician_data(input_file: str, output_file: str):
 
 
 if __name__ == "__main__":
-    input_file = "data/outputs/politicians_from_elections.csv"
-    output_file = "data/outputs/politicians_cleaned.csv"
+    import argparse
+    
+    parser = argparse.ArgumentParser(description="Clean politician data")
+    parser.add_argument('--input', '-i', default='politicians_from_elections.csv', help='Input CSV filename')
+    parser.add_argument('--output', '-o', default='politicians_cleaned.csv', help='Output CSV filename')
+    args = parser.parse_args()
+    
+    # Extract just filename if full path given
+    from pathlib import Path
+    input_file = f"data/outputs/{Path(args.input).name}"
+    output_file = f"data/outputs/{Path(args.output).name}"
     
     clean_politician_data(input_file, output_file)

@@ -3,6 +3,7 @@
 # Official websites (examples - expand with comprehensive list)
 official_websites:
   national:
+    # Cabinet Members
     - url: "https://kishida.gr.jp/"
       name: "岸田文雄"
       office: "Prime Minister"
@@ -10,12 +11,75 @@ official_websites:
     - url: "https://ishibashirintaro.com/"
       name: "石橋林太郎"
       office: "House of Representatives"
+    
+    # Add National Diet Members (Sample - these are public official websites)
+    - url: "https://www.yamadataro.net/"
+      name: "山田太郎"
+      office: "House of Councillors"
       
-  # Add more officials here
-  # Format:
-  # - url: "https://example.com"
-  #   name: "Official Name"
-  #   office: "Position"
+    - url: "https://www.saitotetsuo.jp/"
+      name: "斎藤鉄夫"
+      office: "House of Representatives"
+      
+    - url: "https://www.matsui-ichiro.com/"
+      name: "松井一郎"
+      office: "Former Governor"
+      
+    - url: "https://koike-yuriko.jp/"
+      name: "小池百合子"
+      office: "Tokyo Governor"
+      
+    - url: "https://www.yoshimura-hirofumi.com/"
+      name: "吉村洋文"
+      office: "Osaka Governor"
+      
+    - url: "https://www.hayashi-yoshimasa.jp/"
+      name: "林芳正"
+      office: "House of Councillors"
+      
+    - url: "https://www.takaichi-sanae.com/"
+      name: "高市早苗"
+      office: "House of Representatives"
+      
+    - url: "https://www.kono-taro.jp/"
+      name: "河野太郎"
+      office: "House of Representatives"
+      
+  # Prefectural Governors and Major Officials
+  prefectural:
+    - url: "https://www.pref.hokkaido.lg.jp/ss/ssa/"
+      name: "Hokkaido Governor Office"
+      prefecture: "北海道"
+      
+    - url: "https://www.pref.aomori.lg.jp/"
+      name: "Aomori Prefecture"
+      prefecture: "青森県"
+      
+    - url: "https://www.pref.tokyo.lg.jp/"
+      name: "Tokyo Metropolitan Government"
+      prefecture: "東京都"
+      
+    - url: "https://www.pref.osaka.lg.jp/"
+      name: "Osaka Prefecture"
+      prefecture: "大阪府"
+      
+  # Major City Mayors
+  municipal:
+    - url: "https://www.city.yokohama.lg.jp/"
+      name: "Yokohama City"
+      city: "横浜市"
+      
+    - url: "https://www.city.osaka.lg.jp/"
+      name: "Osaka City"
+      city: "大阪市"
+      
+    - url: "https://www.city.nagoya.jp/"
+      name: "Nagoya City"
+      city: "名古屋市"
+      
+    - url: "https://www.city.sapporo.jp/"
+      name: "Sapporo City"
+      city: "札幌市"
 
 # Election management committees
 election_sources:

@@ -98,6 +98,13 @@ def load_csv_data(filename):
             return None
     return None
 
+def load_csv_with_fallback(primary, fallback):
+    """Load primary CSV file, fall back to secondary if primary doesn't exist."""
+    df = load_csv_data(primary)
+    if df is None or df.empty:
+        df = load_csv_data(fallback)
+    return df
+
 def get_file_info(filename):
     """Get file modification time and size."""
     filepath = get_output_path() / filename
@@ -317,9 +324,9 @@ with tab1:
     # Metrics
     col1, col2, col3, col4 = st.columns(4)
     
-    # Load current data
-    officials_df = load_csv_data("officials.csv")
-    elections_df = load_csv_data("elections.csv")
+    # Load current data - prefer enriched files if they exist
+    officials_df = load_csv_with_fallback("officials_expanded.csv", "officials.csv")
+    elections_df = load_csv_with_fallback("elections_expanded.csv", "elections.csv")
     election_results_df = load_csv_data("election_results.csv")
     funding_df = load_csv_data("funding.csv")
     social_df = load_csv_data("officials_social.csv")
@@ -327,17 +334,21 @@ with tab1:
     
     with col1:
         count = len(politicians_cleaned_df) if politicians_cleaned_df is not None else 0
-        st.metric("🏛️ Politicians (Election Data)", count)
+        st.metric("🏛️ Politicians (Historical)", f"{count:,}")
         if count > 0:
-            st.caption("✅ 95.4% quality - 47 prefectures")
+            st.caption("✅ 93.7% quality - 46 prefectures")
     
     with col2:
         count = len(elections_df) if elections_df is not None else 0
-        st.metric("🗳️ Elections", count)
+        st.metric("🗳️ Elections (Unique)", count)
+        if count > 0:
+            st.caption("📊 Past elections 2015-2025")
     
     with col3:
         count = len(officials_df) if officials_df is not None else 0
-        st.metric("� Officials", count)
+        st.metric("👥 Officials (Candidates)", count)
+        if count > 0:
+            st.caption("📋 From election results")
     
     with col4:
         count = len(social_df) if social_df is not None else 0
@@ -427,7 +438,7 @@ with tab2:
             st.metric("Prefectures Covered", f"{prefectures}/47")
         
         with col3:
-            quality_score = 95.4  # From cleaning results
+            quality_score = 93.7  # From cleaning results (7,211 valid from 7,693 raw)
             st.metric("Data Quality", f"{quality_score}%")
         
         with col4:
@@ -513,8 +524,9 @@ with tab2:
 # Tab 3: Officials
 with tab3:
     st.subheader("👥 Public Officials Data")
+    st.caption("Election candidates from past elections (2015-2025)")
     
-    officials_df = load_csv_data("officials.csv")
+    officials_df = load_csv_with_fallback("officials_expanded.csv", "officials.csv")
     
     if officials_df is not None and not officials_df.empty:
         # Filters
@@ -728,9 +740,10 @@ with tab4:
 
 # Tab 5: Municipal Scraping
 with tab5:
-    st.subheader("�️ Municipal Scraping Results")
+    st.subheader("🗳️ Election Schedules")
+    st.caption("Scraping 1,747 municipalities across Japan")
     
-    elections_df = load_csv_data("elections.csv")
+    elections_df = load_csv_with_fallback("elections_expanded.csv", "elections.csv")
     
     if elections_df is not None and not elections_df.empty:
         # Filters

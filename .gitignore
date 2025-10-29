@@ -37,7 +37,6 @@ env/
 
 # Project specific
 data/cache/
-data/outputs/*.csv
 data/state/
 logs/*.log
 *.log
@@ -48,9 +47,8 @@ logs/*.log
 !data/state/.gitkeep
 !logs/.gitkeep
 
-# Allow important deliverable files
-!data/outputs/politicians_cleaned.csv
-!data/outputs/politicians_from_elections.csv
+# Allow all important CSV data files
+!data/outputs/*.csv
 
 # Testing
 .pytest_cache/

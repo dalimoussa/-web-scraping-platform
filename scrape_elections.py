@@ -135,20 +135,19 @@ class ElectionDataScraper:
         return all_politicians
     
     def _get_prefecture_elections(self, romaji: str, kanji: str) -> List[str]:
-        """Get list of election URLs for a prefecture."""
+        """Get list of election URLs for a prefecture - ENHANCED to collect MORE elections."""
         
-        # Try prefecture page
+        election_links = []
+        
+        # Strategy 1: Prefecture main page
         prefecture_url = f"{self.elections_base}/pref/{romaji}/"
         
         try:
             response = self.http.get(prefecture_url)
-            # Use response.content.decode to avoid encoding issues
             html_content = response.content.decode('utf-8', errors='replace')
             soup = parse_html(html_content)
             
-            election_links = []
-            
-            # Find election links
+            # Find all election links
             for link in soup.find_all('a', href=True):
                 href = link.get('href', '')
                 
@@ -157,12 +156,45 @@ class ElectionDataScraper:
                     full_url = urljoin(self.base_url, href)
                     if full_url not in election_links:
                         election_links.append(full_url)
-            
-            return election_links
-            
         except Exception as e:
-            print(f"    Error getting elections: {e}")
-            return []
+            print(f"    Error getting prefecture page: {e}")
+        
+        # Strategy 2: Try to get MORE elections by exploring election list pages
+        try:
+            # Look for election list/archive pages
+            list_url = f"{self.elections_base}/area/pref/{romaji}/"
+            response = self.http.get(list_url)
+            html_content = response.content.decode('utf-8', errors='replace')
+            soup = parse_html(html_content)
+            
+            for link in soup.find_all('a', href=True):
+                href = link.get('href', '')
+                if '/area/card/' in href or '/elections/' in href:
+                    full_url = urljoin(self.base_url, href)
+                    if full_url not in election_links:
+                        election_links.append(full_url)
+        except:
+            pass  # If this strategy fails, continue with what we have
+        
+        # Strategy 3: Try year-based archives to get historical elections
+        current_year = 2025
+        for year in range(2015, current_year + 1):  # Get last 10 years
+            try:
+                year_url = f"{self.elections_base}/pref/{romaji}/?year={year}"
+                response = self.http.get(year_url)
+                html_content = response.content.decode('utf-8', errors='replace')
+                soup = parse_html(html_content)
+                
+                for link in soup.find_all('a', href=True):
+                    href = link.get('href', '')
+                    if '/area/card/' in href:
+                        full_url = urljoin(self.base_url, href)
+                        if full_url not in election_links:
+                            election_links.append(full_url)
+            except:
+                pass  # If year doesn't exist, continue
+        
+        return election_links
     
     def _extract_politicians_from_election(self, election_url: str, prefecture: str) -> List[Dict[str, Any]]:
         """
@@ -441,7 +473,9 @@ def main():
     if politicians:
         # Save to CSV
         exporter = CSVExporter()
-        output_path = exporter.export(politicians, args.output)
+        # Extract just the filename if full path provided
+        output_filename = Path(args.output).name if '/' in args.output or '\\' in args.output else args.output
+        output_path = exporter.export(politicians, output_filename)
         
         print("\n" + "="*80)
         print("📊 FINAL STATISTICS")
